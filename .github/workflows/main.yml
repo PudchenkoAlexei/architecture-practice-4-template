@@ -1,24 +1,21 @@
-name: CI
+name: github-actions
 
 on:
   push:
-    branches:
-      - '**'  # Триггер на пуши во все ветки
-  pull_request:  # Дополнительно, если хотите запускать тесты при открытии PR
-    branches:
-      - '**'  # Триггер на PR из всех веток
-
+    branches: ['main']
+  pull_request:
+    branches: ['main']
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Run Integration Tests
-        run: docker-compose -f docker-compose.yaml -f docker-compose.test.yaml up --exit-code-from test
-
-      - name: Run Unit Tests
-        run: go test -v ./cmd/lb
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker image and run unit tests
+        run: docker-compose build
+      - name: Running integration test
+        run: |
+          docker-compose -f docker-compose.yaml -f docker-compose.test.yaml up --exit-code-from test
